@@ -78,11 +78,24 @@ export class CompraController {
         .json({ message: 'No tienes permisos para realizar esta acción' })
       return
     }
+    let datosUsuario: {
+      endpoint: string
+      tokenUsage: number
+    }
     const factura = req.file
     if (!factura) {
       res.status(400).json({
         message: 'Debes enviar una factura compatible con nuestros sistemas'
       })
+      return
+    }
+    try {
+      datosUsuario = await this.compraCases.getUsuarioById(
+        req.authInfo.userId as string
+      )
+      console.log('usuario', datosUsuario)
+    } catch (error) {
+      res.status(404).json({ message: error })
       return
     }
     const loadPDF = await PDFDocument.load(factura.buffer)
@@ -94,26 +107,26 @@ export class CompraController {
       })
       return
     }
-    let datosUsuario: {
-      endpoint: string
-      tokenUsage: number
-    }
-    try {
-      datosUsuario = await this.compraCases.getUsuarioById(
-        req.authInfo.userId as string
-      )
-      console.log('usuario', datosUsuario)
-    } catch (error) {
-      res.status(404).json({ message: error })
-      return
-    }
-    if (datosUsuario.tokenUsage > 10) {
+
+    if (datosUsuario.tokenUsage > 10 && datosUsuario.endpoint === null) {
       res.status(403).json({
         message: 'Has superado el límite de tokens diarios'
       })
       return
     }
-    if (datosUsuario.tokenUsage + nPaginas > 10) {
+    if (datosUsuario.tokenUsage + nPaginas > 10 && datosUsuario.endpoint === null) {
+      res.status(403).json({
+        message: 'No tienes suficientes tokens para leer este fichero'
+      })
+      return
+    }
+    if (datosUsuario.tokenUsage > 250 && datosUsuario.endpoint !== null) {
+      res.status(403).json({
+        message: 'Has superado el límite de tokens diarios'
+      })
+      return
+    }
+    if (datosUsuario.tokenUsage + nPaginas > 250 && datosUsuario.endpoint !== null) {
       res.status(403).json({
         message: 'No tienes suficientes tokens para leer este fichero'
       })
