@@ -1,0 +1,64 @@
+### ENDPOINTS
+
+## USUARIO
+
+# /user/login - POST
+ El control de acceso de la aplicacion requiere una peticion POST con el body de la peticion de la siguiente manera:
+ {
+      "username": string,
+      "password": string
+ }
+ En caso de recibir credenciales incorrectas, la respuesta sera un 401 - Las credenciales proporcionadas no son validas.
+ Si las credenciales fueran correctas, la respuesta devolveria un objecto UserLoginDTO con la siguiente estructura:
+ {
+      "id": string,
+      "tokenJWT": string,
+      "role": string
+ }
+# /user/register - POST
+ La creaacion de un nuevo usuario se gestiona a traves de una peticion POST con el body de la peticion de la siguiente manera:
+ {
+      "username": string
+      "email": string
+      "password": string
+ }
+ En caso de encontrarse algun error con el formato de los datos suministrados, la respuesta sera un 400 con el cuerpo del error encontrado.
+ Si las credenciales fueran correctas, la respuesta devolveria un codigo de estado 201 con un mensaje con el nombre del usuario creado
+# /user/:userId - GET
+ El endpoint destinado a la busqueda de informacion de un usuario concreto por su UserID es una peticion GET con un control de acceso por middlewares:
+  - tokenValidation
+  - authValidation
+ En caso de no encontrar al usuario recibiremos un error 404 con el mensaje 'Usuario no encontrado'
+ Por el contrario si la peticion es satisfactoria, la API nos devolvera un codigo de estado 200 y UserEntity con la siguiente estructura: 
+ {
+  id: string
+  username: string
+  email: string
+  password: string
+  role: UserRole
+}
+## COMPRAS
+
+# /compras/crear - POST
+# /compras/mapearFactura - POST
+# /compras/:compraId - GET
+# /compras/todas/:userId - GET
+
+## PRODUCTOS
+
+# /productos/:productoId - PUT
+ La llamada se encarga de actualizar los datos de un producto determinado mediante el productoId y una petcion - PUT
+ La informacion nueva del producto sera suministrada mediante el body
+ {
+      nombre: string,
+      precio: number,
+      comercioId: string,
+      categoria?: [{
+        id: string,
+        nombre: string
+      }]
+ }
+ El id es inalterable por lo que no sera suministrado por el cuerpo, en cambio lo recibiremos por parametros en la propia ruta.
+ El id suministrado en la ruta sera el producto que se modificara, y no se comprobara que los nuevos datos sean coherentes.
+# /productos/:productoId - DELETE
+# /productos/:productoId - GET
