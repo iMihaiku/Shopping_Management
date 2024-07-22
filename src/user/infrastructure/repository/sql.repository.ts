@@ -10,6 +10,16 @@ export class SQLRepository implements UserRepository {
     if (await this.checkUsernameExists(user.username)) {
       throw new Error('Username already exists')
     }
+    const nUsuariosActuales = await tursoClient.execute({
+      sql: 'SELECT COUNT(*) FROM users',
+      args: {}
+    })
+    if (!nUsuariosActuales.rows[0]?.['COUNT(*)']) {
+      throw new Error('Error getting number of users')
+    }
+    if (nUsuariosActuales.rows[0]['COUNT(*)'] as number >= 25) {
+      throw new Error('Max number of users reached')
+    }
     await tursoClient.execute({
       sql: `INSERT INTO 
       users (id, username, email, password, role, endpoint, tokenUsage, tierAccount) 
